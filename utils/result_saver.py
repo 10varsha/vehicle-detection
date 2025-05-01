@@ -1,6 +1,11 @@
 import json
 import os
 import cv2
+import torch
+
+# Define device globally
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f"[INFO] Using device: {device}")
 
 class ResultSaver:
     def __init__(self, output_dir='outputs', annotated_dir='outputs/annotated_images'):

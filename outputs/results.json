@@ -1,0 +1,14 @@
+[
+    {
+        "filename": "car-1.jpg",
+        "boxes": [],
+        "labels": [],
+        "scores": []
+    },
+    {
+        "filename": "car-2.jpeg",
+        "boxes": [],
+        "labels": [],
+        "scores": []
+    }
+]

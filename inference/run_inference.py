@@ -2,7 +2,7 @@ import os
 import json
 import cv2
 
-from ..utils.visualizer import Visualizer
+from utils.visualizer import Visualizer
 from utils.result_saver import ResultSaver
 from models.vehicle_detection import VehicleDetector
 
@@ -26,7 +26,7 @@ def run_inference(image_folder, output_folder):
                 continue
             
             # Run inference
-            boxes, labels, scores = detector.predict(image)
+            boxes, labels, scores = detector.predict(image_path)
 
             # Save results to JSON
             image_result = {
@@ -59,3 +59,7 @@ if __name__ == "__main__":
     os.makedirs(os.path.join(output_folder, 'annotated_images'), exist_ok=True)  # Ensure the folder exists
 
     run_inference(image_folder, output_folder)
+
+
+
+#python -m inference.run_inference

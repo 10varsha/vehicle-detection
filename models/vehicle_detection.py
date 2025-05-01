@@ -1,5 +1,10 @@
 from models.detector import Detector
 import torchvision
+import torch
+
+# Define device globally
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f"[INFO] Using device: {device}")
 
 class VehicleDetector(Detector):
     def __init__(self, num_classes=196+1, model_name='fasterrcnn_resnet50_fpn', device=None, pretrained=True):
