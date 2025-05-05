@@ -40,29 +40,38 @@ class Trainer:
 
     def train(self):
         self.model.train()
-        for epoch in range(self.num_epochs):
-            epoch_loss = 0.0
-            for images, targets in tqdm(self.train_loader, desc=f"Epoch {epoch+1}/{self.num_epochs}"):
-                images = [image.to(self.device) for image in images]  # Move images to device
-                targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]  # Move targets to device
-                
-                # Perform forward pass, loss calculation, and backpropagation
-                loss_dict = self.model(images, targets)
-                # Get total loss
-                losses = sum(loss for loss in loss_dict.values())
-                epoch_loss += losses.item()
 
+        for epoch in range(self.num_epochs):
+            loop = tqdm(self.train_loader, desc=f"Epoch {epoch+1}/{self.num_epochs}")
+
+            for images, targets in loop:
+                # Move each image and target to device
+                images = [img.to(self.device) for img in images]
+                targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
+
+                # Zero gradients
                 self.optimizer.zero_grad()
+
+                # Forward pass
+                loss_dict = self.model(images, targets)
+                losses = sum(loss for loss in loss_dict.values())
+
+                # Backward and optimize
                 losses.backward()
                 self.optimizer.step()
 
+                # Update progress bar
+                loop.set_postfix(loss=losses.item())
+
             self.lr_scheduler.step()
-            print(f"[INFO] Epoch {epoch+1} Loss: {epoch_loss:.4f}")
 
     def save_model(self, path="outputs/fine_tuned_model.pth"):
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+        dir_name = os.path.dirname(path)
+        if dir_name:  # Only make dirs if a directory path exists
+            os.makedirs(dir_name, exist_ok=True)
         torch.save(self.model.state_dict(), path)
         print(f"[INFO] Model saved to {path}")
+
 
     def get_model(self):
         return self.model
