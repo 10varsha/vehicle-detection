@@ -62,12 +62,12 @@ COCO_INSTANCE_CATEGORY_NAMES = {
 
 if __name__ == "__main__":
     # Paths for input images and output results
-    image_folder = 'data/images/'  # Adjust according to your folder structure
-    output_folder = 'outputs/'  # Adjust according to your desired output folder
+    image_folder = 'data/raw/cars_test'  # Adjust according to your folder structure
+    output_folder = 'outputs/inference'  # Adjust according to your desired output folder
 
     os.makedirs(os.path.join(output_folder, 'annotated_images'), exist_ok=True)  # Ensure the folder exists
 
-    run_inference(image_folder, output_folder)
+    run_inference(image_folder, output_folder, model_path = None)
 
 
 

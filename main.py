@@ -1,6 +1,7 @@
 import os
 from inference.run_inference import run_inference
 from models.trainer import Trainer
+from models.test import Tester
 from data.dataset import StanfordCarsDataset
 import torchvision.transforms.v2 as T
 import torch
@@ -27,9 +28,24 @@ if __name__ == "__main__":
         trainer.model.load_state_dict(torch.load(model_path, map_location=trainer.device))
     else:
         trainer.train()
+        trainer.evaluate()
         trainer.save_model(model_path)
 
-    # Run inference
+    # =================== TEST ON ANNOTATED TEST DATA ===================
+
+    test_dataset = StanfordCarsDataset(
+        root_dir="data/raw/cars_test",  # Make sure this exists
+        annotation_file="data/raw/devkit/cars_test_annos.mat",  # Or whatever test anno file you have
+        transforms=train_transforms
+    )
+
+    tester = Tester(model=trainer.get_model(), dataset=test_dataset)
+    tester.test(num_samples=10)
+
+    # =================== OPTIONAL INFERENCE ON RAW TEST IMAGES ===================
+
     image_folder = "data/raw/cars_test"
     output_folder = "outputs/inference"
-    run_inference(image_folder, output_folder, model_path=model_path)
+    run_inference(image_folder, output_folder)
+
+    

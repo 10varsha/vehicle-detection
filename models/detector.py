@@ -3,13 +3,15 @@ import torchvision
 from torchvision import transforms
 import torchvision.transforms as T
 from PIL import Image
+from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+
 
 # Define device globally
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"[INFO] Using device: {device}")
 
 class Detector:
-    def __init__(self, model_name='fasterrcnn_resnet50_fpn', device=None):
+    def __init__(self, model_name='outputs/fine_tuned_model.pth', device=None):
         self.model_name = model_name
         self.device = device or ('cuda' if torch.cuda.is_available() else 'cpu')
         self.model = self.load_model()
@@ -21,12 +23,20 @@ class Detector:
         ])
 
     def load_model(self):
-        # Loading a pretrained model from torchvision
-        if self.model_name == 'fasterrcnn_resnet50_fpn':
-            model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
-        else:
-            raise ValueError(f"Model {self.model_name} not supported yet. Add it in Detector class.")
+        num_classes = 197  # 196 classes + background
+        model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=False)
+
+        # Replace the head to match your dataset
+        in_features = model.roi_heads.box_predictor.cls_score.in_features
+        model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+
+        path = "outputs/fine_tuned_model.pth"
+        model.load_state_dict(torch.load(path, map_location=self.device))
+
+        model.to(self.device)
+        model.eval()
         return model
+
     
     def preprocess(self, image_path):
         # Preprocess the input image
