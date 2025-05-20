@@ -19,14 +19,12 @@ class Visualizer:
             # Draw the bounding box
             cv2.rectangle(image, (x_min, y_min), (x_max, y_max), self.color, self.thickness)
 
-            label_text = f"ID: {label}"
-            if label_map and label in label_map:
-                label_text = label_map.get(label, f"ID: {label}")
+            label_text = f"{COCO_INSTANCE_CATEGORY_NAMES[label]} {score:.2f}"
 
             # Display label with score
             cv2.putText(
                 image, 
-                f"{label_text} {score:.2f}", 
+                label_text, 
                 (x_min, y_min - 10), 
                 self.font, 
                 self.font_scale, 
@@ -36,6 +34,12 @@ class Visualizer:
 
         return image
     
+
+COCO_INSTANCE_CATEGORY_NAMES = [
+    '__background__', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
+    'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'stop sign', 
+    # ... add all 91 class names if needed
+]
 
 
 

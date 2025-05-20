@@ -1,18 +1,22 @@
 from models.detector import Detector
 import torchvision
+import torch
+
+# Define device globally
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f"[INFO] Using device: {device}")
 
 class VehicleDetector(Detector):
-    def __init__(self, num_classes=196+1, model_name='fasterrcnn_resnet50_fpn', device=None, pretrained=True):
-        #num_classes: 196 car types + 1 background
-        super().__init__(model_name, device)
-
-        # Replace the classification head (this is MANDATORY)
-        in_features = self.model.roi_heads.box_predictor.cls_score.in_features
-        self.model.roi_heads.box_predictor = torchvision.models.detection.faster_rcnn.FastRCNNPredictor(in_features, num_classes)
-
-        print(f"[INFO] VehicleDetector initialized with {num_classes} classes.")
+    def __init__(self, device=None):
+        super().__init__('fasterrcnn_resnet50_fpn', device)
+        print("[INFO] Using COCO pretrained model for car detection.")
 
     def predict(self, image_path, threshold=0.5):
-        # Use parent Detector's preprocessing + inference
         boxes, labels, scores = super().predict(image_path, threshold)
+        # Filter for 'car' (COCO class ID 3)
+        filtered = [(b, l, s) for b, l, s in zip(boxes, labels, scores) if l == 3 and s >= threshold]
+        if filtered:
+            boxes, labels, scores = zip(*filtered)
+        else:
+            boxes, labels, scores = [], [], []
         return boxes, labels, scores

@@ -1,15 +1,24 @@
 import torch
 import torchvision
 from torchvision import transforms
+import torchvision.transforms as T
 from PIL import Image
+
+# Define device globally
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f"[INFO] Using device: {device}")
 
 class Detector:
     def __init__(self, model_name='fasterrcnn_resnet50_fpn', device=None):
         self.model_name = model_name
         self.device = device or ('cuda' if torch.cuda.is_available() else 'cpu')
         self.model = self.load_model()
-        self.model.to(self.device)
+        self.model.to(device)
         self.model.eval()
+
+        self.transform = T.Compose([
+            T.ToTensor()
+        ])
 
     def load_model(self):
         # Loading a pretrained model from torchvision
@@ -41,4 +50,22 @@ class Detector:
                 scores.append(score.cpu().detach().numpy())
         
         return boxes, labels, scores
+
+
+    def predict(self, image_path, threshold=0.3):
+        image = Image.open(image_path).convert("RGB")
+        image_tensor = self.transform(image).unsqueeze(0).to(self.device)
+
+        with torch.no_grad():
+            device = next(self.model.parameters()).device
+            image_tensor = image_tensor.to(device)
+            outputs = self.model(image_tensor)[0]
+
+        boxes = outputs['boxes'].cpu().numpy()
+        labels = outputs['labels'].cpu().numpy()
+        scores = outputs['scores'].cpu().numpy()
+
+        # Filter based on threshold
+        filtered = scores >= threshold
+        return boxes[filtered], labels[filtered], scores[filtered]
 

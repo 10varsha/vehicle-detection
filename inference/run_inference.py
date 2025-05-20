@@ -1,14 +1,16 @@
 import os
 import json
 import cv2
+import numpy as np
 
-from ..utils.visualizer import Visualizer
+
+from utils.visualizer import Visualizer
 from utils.result_saver import ResultSaver
 from models.vehicle_detection import VehicleDetector
 
 def run_inference(image_folder, output_folder):
     # Initialize necessary objects
-    detector = VehicleDetector(pretrained=True)  # Or load your fine-tuned model
+    detector = VehicleDetector()  # Or load your fine-tuned model
     visualizer = Visualizer()
     result_saver = ResultSaver()
 
@@ -26,15 +28,16 @@ def run_inference(image_folder, output_folder):
                 continue
             
             # Run inference
-            boxes, labels, scores = detector.predict(image)
+            boxes, labels, scores = detector.predict(image_path)
 
             # Save results to JSON
             image_result = {
                 "filename": image_filename,
-                "boxes": boxes.tolist(),
-                "labels": labels.tolist(),
-                "scores": scores.tolist()
+                "boxes": np.array(boxes).tolist(),
+                "labels": np.array(labels).tolist(),
+                "scores": np.array(scores).tolist()
             }
+
             all_results.append(image_result)
 
             # Annotate image with bounding boxes and labels
@@ -51,6 +54,12 @@ def run_inference(image_folder, output_folder):
 
     print(f"Inference completed! Results saved in {output_folder}.")
 
+COCO_INSTANCE_CATEGORY_NAMES = {
+    1: 'person', 2: 'bicycle', 3: 'car', 4: 'motorcycle', 5: 'airplane', 
+    6: 'bus', 7: 'train', 8: 'truck', 9: 'boat', 10: 'traffic light',
+    # Add more if needed...
+}
+
 if __name__ == "__main__":
     # Paths for input images and output results
     image_folder = 'data/images/'  # Adjust according to your folder structure
@@ -59,3 +68,7 @@ if __name__ == "__main__":
     os.makedirs(os.path.join(output_folder, 'annotated_images'), exist_ok=True)  # Ensure the folder exists
 
     run_inference(image_folder, output_folder)
+
+
+
+#python -m inference.run_inference
